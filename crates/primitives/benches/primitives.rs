@@ -4,11 +4,10 @@
 use alloy_primitives::keccak256;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use rand::prelude::*;
-use swarm_primitives::bmt::reference::RefHasher;
-use swarm_primitives::bmt::{Hasher, HasherBuilder};
-use swarm_primitives::Address;
-use swarm_primitives::BMT_BRANCHES;
+use swarm_primitives::bmt::{Hasher, HasherBuilder, RefHasher};
+
 use swarm_primitives::{distance, proximity};
+use swarm_primitives_traits::{SwarmAddress, BRANCHES};
 use tokio::runtime::Builder;
 
 pub fn primitives(c: &mut Criterion) {
@@ -28,7 +27,7 @@ pub fn primitives(c: &mut Criterion) {
         })
     });
     g.bench_function("bmt_nonconcurrent", |b| {
-        let hasher: RefHasher<BMT_BRANCHES> = RefHasher::new();
+        let hasher: RefHasher<BRANCHES> = RefHasher::new();
         b.iter(|| {
             black_box(hasher.hash(&random_chunk));
         })
@@ -42,15 +41,16 @@ pub fn primitives(c: &mut Criterion) {
             let mut hasher: Hasher = HasherBuilder::default().build().unwrap();
             black_box(async || {
                 let _ = hasher.write(&random_chunk).await;
+                hasher.set_span(4096);
                 let mut res = [0u8; 32];
                 let _ = hasher.hash(&mut res);
             });
         });
     });
     // Generate some random addresses
-    let x = Address::random();
-    let y = Address::random();
-    let a = Address::random();
+    let x = SwarmAddress::random();
+    let y = SwarmAddress::random();
+    let a = SwarmAddress::random();
     g.bench_function("distance", |b| {
         b.iter(|| {
             black_box(distance::distance(&x, &y));
