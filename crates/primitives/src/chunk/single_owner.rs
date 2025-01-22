@@ -1,44 +1,45 @@
-use alloy_primitives::{Address, PrimitiveSignature, B256};
-use swarm_primitives_traits::{ChunkAddress, ChunkContent};
+use alloy_primitives::{Address, Keccak256, PrimitiveSignature, B256};
+use swarm_primitives_traits::{ChunkAddress, ChunkBody, ChunkHeader};
 
-#[derive(Debug, Eq, PartialEq)]
+use super::bmt_body::BMTBody;
+
 pub struct SingleOwnerChunk {
-    addr: ChunkAddress,
-    data: Vec<u8>,
     id: B256,
     owner: Address,
     signature: PrimitiveSignature,
+    body: BMTBody,
 }
 
 impl SingleOwnerChunk {
-    pub fn new(
-        addr: ChunkAddress,
-        data: Vec<u8>,
-        id: B256,
-        owner: Address,
-        signature: PrimitiveSignature,
-    ) -> Self {
+    pub fn new(id: B256, owner: Address, signature: PrimitiveSignature, body: BMTBody) -> Self {
         Self {
+            id,
             owner,
             signature,
-            id,
-            addr,
-            data,
+            body,
         }
+    }
+
+    async fn to_sign(&self) -> FixedBytes<32> {
+        let mut hasher = Keccak256::new();
+        hasher.update(id);
+        hasher.update(self.body.hash().await);
+
+        hasher.finalize()
     }
 }
 
-impl ChunkContent for SingleOwnerChunk {
-    fn data(&self) -> &[u8] {
-        &self.data
+impl swarm_primitives_traits::Chunk for SingleOwnerChunk {
+    async fn address(&self) -> ChunkAddress {
+        let mut hasher = Keccak256::new();
+        hasher.update(self.header.id);
+        hasher.update(self.header.owner);
+        hasher.finalize()
     }
 
-    fn bmt_address(&self) -> ChunkAddress {
-        self.addr
-    }
-
-    fn verify(&self) -> bool {
-        // Verify using signature and owner
-        true // Placeholder logic
+    async fn verify(&self, address: ChunkAddress) -> bool {
+        // TODO: Signature verification needs to be inserted here to make sure that the body of the
+        // chunk is correctly verified.
+        address == self.address().await
     }
 }

@@ -3,7 +3,7 @@ use alloy_primitives::FixedBytes;
 pub mod chunk;
 pub mod stamp;
 
-pub use chunk::{ChunkContainer, ChunkContent, CHUNK_SIZE};
+pub use chunk::{Chunk, ChunkBody, ChunkHeader, CHUNK_SIZE};
 pub use stamp::Stamp;
 
 const HASH_SIZE: usize = 32;

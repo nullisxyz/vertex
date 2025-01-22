@@ -4,6 +4,7 @@ mod content;
 use content::ContentChunk;
 mod single_owner;
 use single_owner::SingleOwnerChunk;
+mod bmt_body;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum Chunk {

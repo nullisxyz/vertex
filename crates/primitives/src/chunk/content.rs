@@ -1,28 +1,24 @@
-use swarm_primitives_traits::{ChunkAddress, ChunkContent};
+use swarm_primitives_traits::{ChunkAddress, ChunkBody, ChunkHeader};
 
-#[derive(Debug, Eq, PartialEq)]
+use super::bmt_body::BMTBody;
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct ContentChunk {
-    addr: ChunkAddress,
-    data: Vec<u8>,
+    body: BMTBody,
 }
 
 impl ContentChunk {
-    pub fn new(addr: ChunkAddress, data: Vec<u8>) -> Self {
-        Self { addr, data }
+    pub fn new(body: BMTBody) -> Self {
+        Self { body }
     }
 }
 
-impl ChunkContent for ContentChunk {
-    fn data(&self) -> &[u8] {
-        &self.data
+impl swarm_primitives_traits::Chunk for ContentChunk {
+    async fn address(&self) -> swarm_primitives_traits::ChunkAddress {
+        self.body.hash().await
     }
 
-    fn bmt_address(&self) -> swarm_primitives_traits::ChunkAddress {
-        self.addr
-    }
-
-    fn verify(&self) -> bool {
-        // Verify based on BMT hash
-        true
+    async fn verify(&self, address: ChunkAddress) -> bool {
+        address == self.address().await
     }
 }
