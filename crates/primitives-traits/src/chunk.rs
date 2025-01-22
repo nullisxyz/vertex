@@ -1,12 +1,12 @@
 use crate::{ChunkAddress, BRANCHES, SEGMENT_SIZE, SPAN_SIZE};
-use std::fmt::Display;
 
 pub trait ChunkContent {
     fn data(&self) -> &[u8];
     fn bmt_address(&self) -> ChunkAddress;
+    fn verify(&self) -> bool;
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ChunkContainer<C: ChunkContent> {
     inner: C,
 }
@@ -23,9 +23,11 @@ impl<C: ChunkContent> ChunkContainer<C> {
     pub fn bmt_address(&self) -> ChunkAddress {
         self.inner.bmt_address()
     }
-}
 
-//impl Display for ChunkType {}
+    pub fn verify(&self) -> bool {
+        self.inner.verify()
+    }
+}
 
 //pub trait Chunk {
 //    fn address(&self) -> ChunkAddress;
