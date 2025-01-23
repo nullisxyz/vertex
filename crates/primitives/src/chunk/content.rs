@@ -1,6 +1,12 @@
-use swarm_primitives_traits::{ChunkAddress, ChunkBody, ChunkHeader};
+use swarm_primitives_traits::{ChunkAddress, ChunkBody, ChunkDecoding, ChunkEncoding};
 
-use super::bmt_body::BMTBody;
+use super::bmt_body::{BMTBody, BMTBodyError};
+
+#[derive(Debug, thiserror::Error)]
+pub enum ContentChunkError {
+    #[error("BMTBody error: {0}")]
+    BMTBodyError(#[from] BMTBodyError),
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct ContentChunk {
@@ -8,8 +14,16 @@ pub struct ContentChunk {
 }
 
 impl ContentChunk {
-    pub fn new(body: BMTBody) -> Self {
-        Self { body }
+    pub fn new(data: Vec<u8>) -> Result<Self, ContentChunkError> {
+        Ok(Self {
+            body: BMTBody::new(data.len() as u64, data)?,
+        })
+    }
+
+    pub fn new_with_span(span: u64, data: Vec<u8>) -> Result<Self, ContentChunkError> {
+        Ok(Self {
+            body: BMTBody::new(span, data)?,
+        })
     }
 }
 
@@ -20,5 +34,23 @@ impl swarm_primitives_traits::Chunk for ContentChunk {
 
     async fn verify(&self, address: ChunkAddress) -> bool {
         address == self.address().await
+    }
+}
+
+impl ChunkEncoding for ContentChunk {
+    fn size(&self) -> usize {
+        self.body.size()
+    }
+
+    fn to_boxed_slice(&self) -> Box<[u8]> {
+        self.body.to_boxed_slice()
+    }
+}
+
+impl ChunkDecoding for ContentChunk {
+    async fn from_slice(buf: &[u8]) -> Result<Self, impl std::error::Error> {
+        Ok(Self {
+            body: BMTBody::from_slice(buf).await?,
+        })
     }
 }
