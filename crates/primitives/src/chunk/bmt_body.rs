@@ -60,20 +60,21 @@ impl ChunkEncoding for BMTBody {
 }
 
 impl ChunkDecoding for BMTBody {
-    async fn from_slice(value: &[u8]) -> Result<Self, impl std::error::Error> {
-        if value.len() < SPAN_SIZE {
+    #[allow(refining_impl_trait)]
+    async fn from_slice(buf: &[u8]) -> Result<Self, BMTBodyError> {
+        if buf.len() < SPAN_SIZE {
             return Err(BMTBodyError::InsufficientData {
                 min_size: SPAN_SIZE,
-                actual_size: value.len(),
+                actual_size: buf.len(),
             });
         }
 
         // SAFETY: Unwrap is safe as indexing of the slice is guarded by the above conditional.
-        let span = Span::from_le_bytes(value[0..SPAN_SIZE].try_into().unwrap());
+        let span = Span::from_le_bytes(buf[0..SPAN_SIZE].try_into().unwrap());
         // SAFETY: Guard for the condition whereby the data length of the BMT body is zero (raw
         // data consists only of the span).
-        let data = match value.len() > SPAN_SIZE {
-            true => value[SPAN_SIZE..].to_vec(),
+        let data = match buf.len() > SPAN_SIZE {
+            true => buf[SPAN_SIZE..].to_vec(),
             false => vec![],
         };
 

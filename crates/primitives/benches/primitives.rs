@@ -15,12 +15,6 @@ pub fn primitives(c: &mut Criterion) {
     let mut rng = rand::thread_rng();
     let random_chunk: Vec<u8> = (0..4096).map(|_| rng.gen()).collect();
 
-    //g.bench_function("chunk_address/4096", |b| {
-    //    let chunk = Chunk::new(&mut random_chunk.clone(), None, Options::default(), None);
-    //    b.iter(|| {
-    //        black_box(chunk.address());
-    //    });
-    //});
     g.bench_function("hash_baseline", |b| {
         b.iter(|| {
             black_box(keccak256(&random_chunk));

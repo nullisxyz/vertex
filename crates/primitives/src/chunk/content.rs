@@ -48,7 +48,8 @@ impl ChunkEncoding for ContentChunk {
 }
 
 impl ChunkDecoding for ContentChunk {
-    async fn from_slice(buf: &[u8]) -> Result<Self, impl std::error::Error> {
+    #[allow(refining_impl_trait)]
+    async fn from_slice(buf: &[u8]) -> Result<Self, ContentChunkError> {
         Ok(Self {
             body: BMTBody::from_slice(buf).await?,
         })

@@ -1,12 +1,12 @@
-use alloy_primitives::keccak256;
+use alloy_primitives::Keccak256;
 use swarm_primitives_traits::SEGMENT_SIZE;
+
+const SEGMENT_PAIR_SIZE: usize = SEGMENT_SIZE * 2;
 
 /// The non-optimised easy-to-read reference implementation of BMT
 pub struct RefHasher<const N: usize> {
     /// c * hashSize, where c = 2 ^ ceil(log2(count)), where count = ceil(length / hashSize)
     max_data_length: usize,
-    /// 2 * hashSize
-    segment_pair_length: usize,
 }
 
 impl<const N: usize> Default for RefHasher<N> {
@@ -18,23 +18,29 @@ impl<const N: usize> Default for RefHasher<N> {
 impl<const N: usize> RefHasher<N> {
     /// Returns a new RefHasher
     pub fn new() -> Self {
-        let mut c = 2;
+        Self {
+            max_data_length: Self::calculate_max_data_length(),
+        }
+    }
 
+    /// Helper constant function to calculate the max data length
+    const fn calculate_max_data_length() -> usize {
+        // Find the smallest power of 2 greater than or equal to N
+        let mut c = 2;
         while c < N {
             c *= 2;
         }
-
-        Self {
-            segment_pair_length: 2 * SEGMENT_SIZE,
-            max_data_length: c * SEGMENT_SIZE,
-        }
+        c * SEGMENT_SIZE
     }
 
     /// Returns the BMT hash of the byte slice
     #[inline(always)]
-    pub fn hash(&self, data: &[u8]) -> [u8; 32] {
+    pub fn hash(&self, data: &[u8]) -> [u8; 32]
+    where
+        [(); N * SEGMENT_SIZE]:,
+    {
         // if data is shorter than base length (`max_data_length`), we provide padding with zeros.
-        let mut d = vec![0u8; self.max_data_length];
+        let mut d = [0u8; N * SEGMENT_SIZE];
         let len = data.len().min(self.max_data_length);
         d[..len].copy_from_slice(&data[..len]);
 
@@ -50,15 +56,22 @@ impl<const N: usize> RefHasher<N> {
     fn hash_helper(&self, data: &[u8], length: usize) -> [u8; 32] {
         let mut pair = [0u8; (2 * SEGMENT_SIZE)];
 
-        if length == self.segment_pair_length {
+        if length == SEGMENT_PAIR_SIZE {
             pair.copy_from_slice(data);
         } else {
             // Data contains hashes of left and right BMT subtrees
             let half = length / 2;
-            pair[..SEGMENT_SIZE].copy_from_slice(&self.hash_helper(&data[..half], half));
-            pair[SEGMENT_SIZE..].copy_from_slice(&self.hash_helper(&data[half..], half));
+            // Reuse the stack-allocated buffer for the left and right halves
+            let left_hash = self.hash_helper(&data[..half], half);
+            let right_hash = self.hash_helper(&data[half..], half);
+
+            pair[..SEGMENT_SIZE].copy_from_slice(&left_hash);
+            pair[SEGMENT_SIZE..].copy_from_slice(&right_hash);
         };
-        *keccak256(pair)
+
+        let mut hasher = Keccak256::new();
+        hasher.update(pair);
+        *hasher.finalize()
     }
 }
 
@@ -66,7 +79,7 @@ impl<const N: usize> RefHasher<N> {
 mod tests {
     use super::*;
 
-    use alloy_primitives::{b256, FixedBytes};
+    use alloy_primitives::{b256, keccak256, FixedBytes};
     use rand::Rng;
 
     #[test]

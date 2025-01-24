@@ -1,3 +1,4 @@
+#![feature(generic_const_exprs)]
 use swarm_primitives_traits::BRANCHES;
 
 pub mod bmt;

@@ -6,10 +6,7 @@ pub trait Chunk {
     async fn verify(&self, address: ChunkAddress) -> bool;
 }
 
-pub trait ChunkBody
-where
-    Self: Sized,
-{
+pub trait ChunkBody {
     async fn hash(&self) -> ChunkAddress;
 }
 
