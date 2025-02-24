@@ -365,6 +365,7 @@ dependencies = [
  "derive_arbitrary",
  "derive_more",
  "foldhash",
+ "getrandom",
  "hashbrown 0.15.2",
  "indexmap",
  "itoa",
@@ -3538,6 +3539,7 @@ name = "nectar-primitives"
 version = "0.1.0"
 dependencies = [
  "alloy",
+ "alloy-chains",
  "anyhow",
  "arbitrary",
  "bytes",
