@@ -4,7 +4,7 @@
 //! identification in the network. It defines the [`NodeAddress`] trait and related
 //! functionality for managing node addresses across different network configurations.
 
-use alloy::primitives::{Address, Keccak256, PrimitiveSignature, B256};
+use alloy_primitives::{Address, Keccak256, PrimitiveSignature, B256};
 use libp2p::Multiaddr;
 use nectar_primitives_traits::SwarmAddress;
 use thiserror::Error;
@@ -12,17 +12,13 @@ use thiserror::Error;
 /// Errors that can occur when working with node addresses.
 #[derive(Error, Debug)]
 pub enum NodeAddressError {
-    /// Indicates an invalid signature format or content
-    #[error("Invalid signature")]
-    InvalidSignature,
-
     /// Wrapper for signature validation errors from the alloy crate
     #[error("Invalid signature: {0}")]
-    InvalidAlloySignature(#[from] alloy::primitives::SignatureError),
+    InvalidSignature(#[from] alloy_primitives::SignatureError),
 
     /// Wrapper for signer-related errors from the alloy crate
     #[error("Signer error: {0}")]
-    SignerError(#[from] alloy::signers::Error),
+    SignerError(#[from] alloy_signer::Error),
 
     /// Indicates that the calculated overlay address doesn't match the expected value
     #[error("Invalid overlay address")]

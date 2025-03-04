@@ -1,4 +1,4 @@
-use alloy::primitives::Keccak256;
+use alloy_primitives::Keccak256;
 use anyhow::Result;
 use nectar_primitives_traits::{Segment, Span, CHUNK_SIZE, SEGMENT_SIZE};
 use std::sync::{atomic::Ordering, Arc};
@@ -171,7 +171,7 @@ impl Hasher {
     #[inline(always)]
     fn root_hash(&self, last: &[u8], output: &mut [u8]) {
         let mut hasher = Keccak256::new();
-        hasher.update(&self.span.to_le_bytes());
+        hasher.update(self.span.to_le_bytes());
         hasher.update(last);
 
         hasher.finalize_into(output)
@@ -192,7 +192,7 @@ impl Drop for Hasher {
 mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    use alloy::primitives::b256;
+    use alloy_primitives::b256;
     use futures::future::join_all;
     use nectar_primitives_traits::BRANCHES;
     use rand::{rngs::StdRng, Rng, RngCore, SeedableRng};

@@ -9,18 +9,24 @@ repository = "https://nullisxyz.github.io/vertex"
 [workspace]
 members = [
     # "crates/file",
-    #"crates/manifest",
-    #"crates/postage",
-    #"crates/logging",
+    # "crates/manifest",
+    # "crates/postage",
+    # "crates/logging",
     # "bin/waku-swarm-relay",
     # "bin/swarm-tools",
-    # "bin/vertex",
     # "bin/wasm-playground",
     # "bin/swarm-wasm-lib",
+    "bin/vertex",
     "crates/network-primitives",
     "crates/network-primitives-traits",
+    "crates/network/codec",
+    "crates/network/handshake",
+    "crates/network/headers",
+    "crates/network/pricing",
+    "crates/node/cli",
+    "crates/node/core",
     "crates/primitives",
-    "crates/primitives-traits",
+    "crates/primitives-traits", "crates/swarm-forks",
     # "crates/storage",
 ]
 # default-members = [
@@ -41,45 +47,67 @@ nectar-primitives = { path = "crates/primitives", features = ["arbitrary"] }
 nectar-primitives-traits = { path = "crates/primitives-traits" }
 
 ## vertex
+# primitives
 vertex-network-primitives = { path = "crates/network-primitives" }
 vertex-network-primitives-traits = { path = "crates/network-primitives-traits" }
 
+# network protocols
+vertex-network-codec = { path = "crates/network/codec" }
+vertex-network-handshake = { path = "crates/network/handshake" }
+vertex-network-headers = { path = "crates/network/headers" }
+vertex-network-pricing = { path = "crates/network/pricing" }
+
+# node
+vertex-node-core = { path = "crates/node/core" }
+vertex-node-cli = { path = "crates/node/cli" }
+
 ## alloy
-alloy = { version = "0.11", features = [
-    "arbitrary",
-    "eips",
-    "full",
-    "hyper",
-    "json-rpc",
-    "node-bindings",
-    "rpc-client",
-    "rpc-types-debug",
-    "rpc-types-trace",
-    "signer-keystore",
-    "signer-mnemonic",
-] }
+alloy-primitives = { version = "0.8.22", default-features = false }
+alloy-signer = { version = "0.11.1" }
+alloy-signer-local = { version = "0.11.1", features = ["eip712", "keystore"] }
+# alloy = { version = "0.11", features = [
+#     "arbitrary",
+#     "eips",
+#     "full",
+#     "hyper",
+#     "json-rpc",
+#     "node-bindings",
+#     "rpc-client",
+#     "rpc-types-debug",
+#     "rpc-types-trace",
+#     "signer-keystore",
+#     "signer-mnemonic",
+# ] }
 alloy-chains = { version = "0.1.58", default-features = false }
 
-## libp2p
-libp2p = { version = "0.55.0", features = ["tokio", "tcp", "noise", "yamux", "dns", "macros", "ecdsa", "identify", "upnp", "autonat", "ping"] }
-
 ## misc
-clap = { version = "4.5.23", features = ["derive", "env"] }
-getrandom = "0.2"
-rand = "0.8.5"
+# getrandom = "0.2"
+rand = "0.8"
 thiserror = "2.0.4"
 
-# tracing = "0.1.41"
-# tracing-subscriber = { version = "0.3.19", features = [
-#     "env-filter",
-#     "ansi",
-#     "fmt",
-#     "std",
-#     "json",
-#     "time",
-# ] }
+## tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = [
+    "env-filter",
+    "ansi",
+    "fmt",
+    "std",
+    "json",
+    "time",
+] }
 
 bytes = "1.9.0"
+
+## p2p
+libp2p = { version = "0.55.0", features = ["tokio", "noise", "tcp", "yamux", "dns", "macros", "ecdsa", "identify", "upnp", "autonat", "ping"] }
+quick-protobuf = "0.8.0"
+quick-protobuf-codec = "0.3.1"
+asynchronous-codec = "0.7.0"
+libp2p-swarm = "0.46.0"
+libp2p-swarm-test = "0.5.0"
+quickcheck = "1.0.3"
+pb-rs = "0.9.1"
+walkdir = "2.5.0"
 
 ## tokio
 # tokio-stream = "0.1.17"
@@ -100,9 +128,7 @@ futures = "0.3"
 
 # dotenv = "0.15.0"
 # reqwest = { version = "0.12.9", features = ["json"] }
-# async-recursion = "1.1.1"
 anyhow = "1.0.94"
-# prost = "0.13.4"
 
 serde = { version = "1.0", default-features = false }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
@@ -113,8 +139,13 @@ serde_with = { version = "3", default-features = false, features = ["macros"] }
 arbitrary = "1.3"
 assert_matches = "1.5.0"
 criterion = { package = "codspeed-criterion-compat", version = "2.7" }
-pprof = "0.14"
+# pprof = "0.14"
 proptest = "1.4"
 proptest-arbitrary-interop = "0.1"
 proptest-derive = "0.5"
-test-fuzz = "6"
+# test-fuzz = "6"
+vergen-gitcl = "1.0.5"
+
+# misc
+clap = "4"
+eyre = "0.6"
